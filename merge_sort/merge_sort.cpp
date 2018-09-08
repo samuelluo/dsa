@@ -1,9 +1,12 @@
-// g++ -std=c++14 merge_sort.cpp
-#include <iostream>
-#include <vector>
-#include <cstdlib>
-#include <algorithm>
-#include <random>
+// g++ -std=c++17 merge_sort.cpp
+// Includes
+#include <algorithm>    // std::shuffle
+#include <iostream>     // std::cout, std::endl
+#include <random>       // std::random_device
+#include <vector>       // std::vector
+
+// Globals
+std::random_device rd;
 
 std::vector<int> mergeSort(std::vector<int> nums) {
     if (nums.size() == 1) {
@@ -38,19 +41,9 @@ std::vector<int> mergeSort(std::vector<int> nums) {
 }
 
 int main() {
-    // Generate random list of 10 numbers
-    // std::srand(std::time(0));
-    // std::vector<int> nums;
-    // for (int i = 0; i < 10; i++) {
-    //     int num = rand() % 10 + 1;
-    //     nums.push_back(num);
-    // }
-
     // Shuffle vector of 1 to 10
     std::vector<int> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(std::begin(nums), std::end(nums), g);
+    std::shuffle(std::begin(nums), std::end(nums), rd);
     for (auto i : nums) {
         std::cout << i << ' ';
     }
