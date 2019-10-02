@@ -1,5 +1,3 @@
-
-# ---------------------------------------------------------
 def make_trie(words):
     root = dict()
     for w in words:
@@ -11,6 +9,7 @@ def make_trie(words):
         current_dict['*'] = None
     return root
 
+
 def word_in_trie(word, root):
     while len(word) != 0:
         c = word[0]
@@ -20,6 +19,7 @@ def word_in_trie(word, root):
         else:
             root = root[c]
     return True
+
 
 def words_with_prefix(prefix, root):
     # Find the prefix
@@ -41,20 +41,46 @@ def words_with_prefix(prefix, root):
                 queue.append((node[c], curr_prefix + c))
     return words
 
-# ---------------------------------------------------------
-# Build trie
-words = ['to', 'tea', 'ted', 'ten', 'A', 'in', 'inn', 'inning']
-trie = make_trie(words)
-print(trie)
 
-# Check if words in trie
-print(word_in_trie('tea', trie))
-print(word_in_trie('te', trie))
+def _pprint_trie(trie, indent):
+    if trie is None:
+        return
+    if indent == 0:
+        spaces = ''
+    else:
+        spaces = '|' + ('-' * (indent-1))
+    for k in trie.keys():
+        line = spaces + k
+        if trie[k] is not None and '*' in trie[k].keys():
+            line += '*'
+            print(line)
+        else:
+            print(line)
+            _pprint_trie(trie[k], indent + 2)
+        if indent == 0:
+            print('')
 
-# Return words in trie with prefix
-words = words_with_prefix('te', trie)
-print(words)
-words = words_with_prefix('i', trie)
-print(words)
-words = words_with_prefix('inning', trie)
-print(words)
+
+def pprint_trie(trie):
+    print('---------------')
+    _pprint_trie(trie, 0)
+    print('---------------')
+
+
+if __name__ == '__main__':
+    # Build trie
+    words = ['to', 'tea', 'ted', 'ten', 'A', 'in', 'inn', 'inning']
+    trie = make_trie(words)
+    pprint_trie(trie)
+
+    # Check if words in trie
+    print(word_in_trie('tea', trie))
+    print(word_in_trie('te', trie))
+
+    # Return words in trie with prefix
+    words = words_with_prefix('te', trie)
+    print(words)
+    words = words_with_prefix('i', trie)
+    print(words)
+    words = words_with_prefix('inning', trie)
+    print(words)
