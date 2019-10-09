@@ -1,20 +1,22 @@
+"""
+TODO:
+print(M) -> prettyprint
+"""
 import collections
+import itertools
 import numpy
-import pandas
-import random
-import string
 
 
-def dfs(index, component, visited, graph):
+def dfs(key1, component, visited, graph):
     """
     Given a vertex, visit all of the adjacent vertices.
     """
-    visited[index] = True
-    component.append(index)
-    connections = graph[index]
-    for index in connections:
-        if visited[index] is False:
-            component = dfs(index, component, visited, graph)
+    visited[key1] = True
+    component.append(key1)
+    connections = graph[key1]
+    for key2 in connections:
+        if visited[key2] is False:
+            component = dfs(key2, component, visited, graph)
     return component
 
 
@@ -24,13 +26,20 @@ def connected_components(graph):
 
     Parameters
     ----------
-    graph : list-of-lists
+    graph : Dict[T: Set[T]]
+
+    Returns
+    -------
+    components : List[List[T]]
+        Each element is a component (list of vertices that are directly &
+        indirectly connected).
     """
     visited = {k: False for k in graph}
     components = []
     for k in graph:
         if visited[k] is False:
-            component = dfs(k, [], visited, graph)
+            component = []
+            component = dfs(k, component, visited, graph)
             components.append(component)
     return components
 
@@ -39,52 +48,99 @@ def build_graph(edges):
     """
     Parameters
     ----------
-    edges : 2-column pandas.DataFrame
+    edges : List[Tuple[T, T]]
+
+    Returns
+    -------
+    graph : Dict[T: Set[T]]
     """
-    edges = list(edges.itertuples(index=False, name=None))
     graph = collections.defaultdict(lambda: set())
-    for e in edges:
-        graph[e[0]].add(e[1])
-        graph[e[1]].add(e[0])
+    for i, j in edges:
+        graph[i].add(j)
+        graph[j].add(i)
     return graph
 
 
-def generate_random_time_series(ts_name, mu, sigma):
-    ts = numpy.random.normal(mu, sigma, 100)
-    ts = pandas.Series(ts, name='ts_value')
-    ts = ts.reset_index().assign(ts_name=ts_name)
-    return ts
-
-
-def generate_ts_df():
+def M_to_edges(M):
     """
+    Parameters
+    ----------
+    M : NxN List[List[int]]
+        1 means connection.
+        0 means no connection.
+
     Returns
     -------
-    ts_df : pandas.DataFrame
-        (100 rows, 52 columns)
+    edges : List[Tuple[T, T]]
     """
-    ts_df = []
-    main_ts = generate_random_time_series('A', 100, 1)
-    for ts_name in string.ascii_letters:
-        ts = generate_random_time_series(ts_name, 0, random.random()*10)
-        ts['ts_value'] = main_ts['ts_value'] + ts['ts_value']
-        ts_df.append(ts)
-    ts_df = pandas.concat(ts_df)
-    ts_df = ts_df.pivot('index', 'ts_name', 'ts_value')
-    return ts_df
+    edges = []
+    for i, row in enumerate(M):
+        for j, val in enumerate(row):
+            if val == 1:
+                edges.append((i, j))
+                edges.append((j, i))
+    return edges
+
+
+def build_random_M(N, K):
+    """
+    Parameters
+    ----------
+    N : int
+        Return an N-by-N.
+    K : int
+        The number of nodes to connect.
+
+    Returns
+    -------
+    M : List[List[int]]
+        N-by-N list-of-lists.
+    """
+    combinations = itertools.combinations(range(N), 2)
+    combinations = list(combinations)
+    edges_indexes = numpy.random.choice(len(combinations), K, replace=False)
+    edges = [x for i, x in enumerate(combinations) if i in edges_indexes]
+
+    M = []
+    for i in range(N):
+        row = [0] * N
+        M.append(row)
+
+    for i, j in edges:
+        M[i][j] = 1
+        M[j][i] = 1
+    return M
 
 
 if __name__ == '__main__':
-    ts_df = generate_ts_df()
-    corr = ts_df.corr()
+    test_cases = [
+        (
+            [[1, 1, 0],
+             [1, 1, 0],
+             [0, 0, 1]],
+            2
+        ),
+        (
+            [[1, 1, 0],
+             [1, 1, 1],
+             [0, 1, 1]],
+            1
+        )
+    ]
 
-    clusters = corr.stack().rename('corr').to_frame()
-    clusters.index.names = ['ts1', 'ts2']
-    clusters = clusters.reset_index()
-    clusters = clusters[lambda row: row['corr'].abs().between(0.6, 0.99)]
-    edges = clusters[['ts1', 'ts2']]
+    for M, expected in test_cases:
+        edges = M_to_edges(M)
+        graph = build_graph(edges)
+        components = connected_components(graph)
+        # print(graph)
+        # print(components)
+        assert len(components) == expected
 
+    N = 10
+    M = build_random_M(N, 3)
+    edges = M_to_edges(M)
     graph = build_graph(edges)
     components = connected_components(graph)
-    print(clusters)
+    for row in M:
+        print(row)
     print(components)
