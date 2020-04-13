@@ -1,5 +1,8 @@
+"""
+TODO: also implement {item: depends_on}
+"""
 
-# -------------------------------------------------------------------
+
 def topological_sort_helper(graph, visited, stack, node):
     connections = [i for i in graph[node] if i not in visited]
     if len(connections) == 0:
@@ -18,20 +21,23 @@ def topological_sort(graph):
         topological_sort_helper(graph, visited, stack, node)
     print(stack[::-1])
 
-# -------------------------------------------------------------------
-graph = {}
-graph['A'] = ['B', 'C']
-graph['B'] = ['D']
-graph['C'] = ['D']
-graph['D'] = ['E']
-graph['E'] = []
-topological_sort(graph)
 
-graph = {}
-graph[0] = []
-graph[1] = []
-graph[2] = [3]
-graph[3] = [1]
-graph[4] = [0, 1]
-graph[5] = [0, 2]
-topological_sort(graph)
+if __name__ == '__main__':
+    # {upstream: downstream}
+    # elements in `downstream` are dependent on `upstream`
+    graph = {}
+    graph['A'] = ['B', 'C']
+    graph['B'] = ['D']
+    graph['C'] = ['D']
+    graph['D'] = ['E']
+    graph['E'] = []
+    topological_sort(graph)
+
+    graph = {}
+    graph[0] = []
+    graph[1] = []
+    graph[2] = [3]
+    graph[3] = [1]
+    graph[4] = [0, 1]
+    graph[5] = [0, 2]
+    topological_sort(graph)
